@@ -21,11 +21,10 @@ import FeatureExport from 'components/import-export/FeatureExport'
 import ProjectUsage from 'components/ProjectUsage'
 import ProjectStore from 'common/stores/project-store'
 import Tooltip from 'components/Tooltip'
-import { Link } from 'react-router-dom'
 import Setting from 'components/Setting'
 import PlanBasedBanner from 'components/PlanBasedAccess'
 import classNames from 'classnames'
-import { getRoleProjectPermissions } from 'common/services/useRolePermission'
+import EditHealthProvider from 'components/EditHealthProvider'
 
 const ProjectSettingsPage = class extends Component {
   static displayName = 'ProjectSettingsPage'
@@ -61,20 +60,10 @@ const ProjectSettingsPage = class extends Component {
       { forceRefetch: true },
     ).then((roles) => {
       if (!roles?.data?.results?.length) return
-
-      getRoleProjectPermissions(
-        getStore(),
-        {
-          organisation_id: AccountStore.getOrganisation().id,
-          project_id: this.props.match.params.projectId,
-          role_id: roles.data.results[0].id,
-        },
-        { forceRefetch: true },
-      ).then((res) => {
-        const matchingItems = roles.data.results.filter((item1) =>
-          res.data.results.some((item2) => item2.role === item1.id),
-        )
-        this.setState({ roles: matchingItems })
+      getRoles(getStore(), {
+        organisation_id: AccountStore.getOrganisation().id,
+      }).then((res) => {
+        this.setState({ roles: res.data.results })
       })
     })
   }
@@ -591,6 +580,17 @@ const ProjectSettingsPage = class extends Component {
                         projectId={this.props.match.params.projectId}
                       />
                     </TabItem>
+                    {Utils.getFlagsmithHasFeature('feature_health') && (
+                      <TabItem
+                        data-test='feature-health-settings'
+                        tabLabel='Feature Health'
+                      >
+                        <EditHealthProvider
+                          projectId={this.props.match.params.projectId}
+                          tabClassName='flat-panel'
+                        />
+                      </TabItem>
+                    )}
                     <TabItem tabLabel='Permissions'>
                       <EditPermissions
                         onSaveUser={() => {
