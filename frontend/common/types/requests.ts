@@ -18,6 +18,10 @@ import {
   RolePermission,
   Webhook,
   IdentityTrait,
+  Onboarding,
+  StageTrigger,
+  PipelineStatus,
+  StageActionType,
 } from './responses'
 
 export type PagedRequest<T> = T & {
@@ -68,6 +72,27 @@ export type RegisterRequest = {
   organisation_name?: string
   marketing_consent_given?: boolean
 }
+
+export interface StageActionRequest {
+  action_type: StageActionType
+  action_body: { enabled: boolean; segment_id?: number }
+}
+
+export type ReleasePipelineRequest = {
+  project: number
+  name: string
+  description?: string
+  stages: PipelineStageRequest[]
+}
+
+export type PipelineStageRequest = {
+  name: string
+  environment: number
+  order: number
+  trigger: StageTrigger
+  actions: StageActionRequest[]
+}
+
 export type Req = {
   getSegments: PagedRequest<{
     q?: string
@@ -653,7 +678,7 @@ export type Req = {
       id: string
     }
   }
-  createOnboarding: {
+  register: {
     first_name: string
     last_name: string
     email: string
@@ -664,6 +689,7 @@ export type Req = {
   }
   getBuildVersion: {}
   createOnboardingSupportOptIn: {}
+  getEnvironmentMetrics: { id: string }
   getUserEnvironmentPermissions: {
     environmentId: string
     userId: string
@@ -672,6 +698,24 @@ export type Req = {
     id?: string
     userId: number | undefined
     level: PermissionLevel
+  }
+  getProfile: {}
+  updateOnboarding: Partial<Onboarding>
+  getReleasePipelines: PagedRequest<{ projectId: number }>
+  getReleasePipeline: { projectId: number; pipelineId: number }
+  createReleasePipeline: ReleasePipelineRequest
+  getPipelineStages: PagedRequest<{
+    projectId: number
+    pipelineId: number
+  }>
+  getPipelineStage: {
+    projectId: number
+    pipelineId: number
+    stageId: number
+  }
+  deleteReleasePipeline: {
+    projectId: number
+    pipelineId: number
   }
   // END OF TYPES
 }
